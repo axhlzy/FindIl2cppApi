@@ -1,3 +1,4 @@
 build/*
 armeabi-v7a/*
 arm64-v8a/*
+find_il2cpp_api.js

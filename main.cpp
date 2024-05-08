@@ -10,6 +10,11 @@ int main(int argc, char **argv) {
         return 1;
     }
 
+#ifdef __arm__
+    std::cout << "arm32 not implemented" << std::endl;
+    return 0;
+#endif
+
     const std::string elf_file_path = argv[1];
 
     auto binary = LIEF::ELF::Parser::parse(elf_file_path);
@@ -124,7 +129,6 @@ int main(int argc, char **argv) {
         section_map1.emplace(start1, end1);
     }
 
-    // 初始化capstone arm64
     csh handle;
     cs_insn *insn;
     if (cs_open(cs_arch::CS_ARCH_AARCH64, CS_MODE_ARM, &handle) != CS_ERR_OK) {
@@ -201,11 +205,6 @@ int main(int argc, char **argv) {
 
     uintptr_t LookupSymbolNearAddress = 0;
 
-    // print ref_string_map
-    // format :
-    // "string" @ 0x0000000000000000 is referenced by instructions at
-    //          0x0000000000000000
-    //          0x0000000000000000
     for (const auto &entry : ref_string_map) {
         const auto addr_relative = entry.first;
         const auto &addrs_absolute = entry.second;
@@ -235,7 +234,7 @@ int main(int argc, char **argv) {
         size_t count = cs_disasm(handle, reinterpret_cast<const uint8_t *>(LookupSymbol), base, LookupSymbol, 0, &insn);
         count = 1;
         for (size_t i = 0; i < count; ++i) {
-            // bl	0x74e78e39f8
+            // bl 0x74e78e39f8
             const std::string ins_str = insn[i].op_str;
             // get op value
             auto op = ins_str.substr(ins_str.find_last_of(" ") + 1);
